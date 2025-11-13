@@ -1,0 +1,110 @@
+---
+title: Authentication
+description: Secure your Operama API access with authentication methods and best practices
+---
+
+## API Authentication Overview
+
+You authenticate with Operama using API keys or OAuth 2.0 tokens to ensure secure access to diagnostic endpoints. API keys suit simple integrations, while OAuth provides granular permissions for team environments. Generate your credentials from the dashboard and include them in requests to protect sensitive data.
+
+<Callout kind="tip">
+  Rotate API keys regularly to maintain security, especially after team changes.
+</Callout>
+
+## Generating Credentials
+
+Access the Operama dashboard to create authentication tokens. You select the scope during generation, such as read-only for analysis or full access for configuration updates.
+
+<Steps>
+  <Step title="Log In to Dashboard" icon="log-in">
+    Enter your credentials at operama.com/login.
+  </Step>
+  <Step title="Navigate to API Section" icon="settings">
+    Click on the API management panel in the sidebar.
+  </Step>
+  <Step title="Create Key" icon="key">
+    Choose the key type and scopes, then copy the generated token.
+    ````javascript
+    // Store securely, e.g., in environment variables
+    process.env.OPERAMA_API_KEY = 'your-generated-key-here';
+    ````
+  </Step>
+</Steps>
+
+## Using API Keys
+
+Include the API key in the Authorization header for every request. This method authenticates your calls to diagnostic endpoints efficiently.
+
+<Tabs>
+  <Tab title="cURL Example" icon="terminal">
+    ````bash
+    curl -X GET 'https://api.operama.com/v1/diagnostics' \
+      -H 'Authorization: Bearer your-api-key-here' \
+      -H 'Content-Type: application/json'
+    ````
+  </Tab>
+  <Tab title="JavaScript SDK" icon="code">
+    ````javascript
+    import { OperamaClient } from 'operama-sdk';
+    const client = new OperamaClient({
+      apiKey: process.env.OPERAMA_API_KEY
+    });
+    const diagnostics = await client.getDiagnostics();
+    ````
+  </Tab>
+  <Tab title="Python" icon="python">
+    ````python
+    import requests
+    headers = {
+        'Authorization': f'Bearer {os.getenv("OPERAMA_API_KEY")}',
+        'Content-Type': 'application/json'
+    }
+    response = requests.get('https://api.operama.com/v1/diagnostics', headers=headers)
+    `````
+  </Tab>
+</Tabs>
+
+<Columns cols={2}>
+  <Card title="API Key Limits" icon="database" href="#">
+    Keys support up to 10,000 requests per hour to prevent abuse.
+  </Card>
+  <Card title="OAuth Setup" icon="users" href="#">
+    For multi-user access, implement OAuth flows with client ID and secret.
+  </Card>
+</Columns>
+
+## OAuth 2.0 Integration
+
+OAuth enables delegated access without sharing credentials. You register your application in the dashboard to obtain client ID and secret, then handle the authorization code flow.
+
+````javascript
+// Authorization URL
+const authUrl = `https://auth.operama.com/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=diagnostics:read`;
+// After callback, exchange code for token
+const tokenResponse = await fetch('https://auth.operama.com/oauth/token', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+  body: new URLSearchParams({
+    grant_type: 'authorization_code',
+    code: authCode,
+    client_id: clientId,
+    client_secret: clientSecret,
+    redirect_uri: redirectUri
+  })
+});
+````
+
+<Expandable title="Troubleshooting Authentication Errors" default-open="false">
+  Common issues include expired tokens or incorrect scopes. Check the response status: `401` indicates invalid credentials, while `403` means insufficient permissions. Regenerate keys if you suspect compromise.
+</Expandable>
+
+<ExpandableGroup>
+  <Expandable title="What if my key is compromised?" default-open="true">
+    Immediately revoke the key from the dashboard and generate a new one. Monitor your access logs for unusual activity.
+  </Expandable>
+  <Expandable title="Does Operama support JWT?" default-open="false">
+    Yes, OAuth tokens are JWTs containing claims like expiration and scopes for verification.
+  </Expandable>
+</ExpandableGroup>
+
+Follow these practices to keep your Operama interactions secure and efficient. Proceed to configuration for setup details.

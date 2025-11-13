@@ -1,0 +1,79 @@
+---
+title: Introduction
+description: Overview of Operama and its core capabilities for diagnostic solutions
+---
+
+## Getting Started
+
+You use Operama to access advanced diagnostic tools that analyze your data and provide actionable insights. This platform helps teams replace intuition with precise, data-backed decisions across various workflows. Begin by creating an account and integrating your data sources to unlock full functionality.
+
+<Columns cols={3}>
+  <Card title="Rapid Analysis" icon="zap" href="#">
+    Process large datasets in seconds to identify patterns and anomalies.
+  </Card>
+  <Card title="Secure Integration" icon="shield" href="#">
+    Connect securely with your existing tools without compromising data privacy.
+  </Card>
+  <Card title="Custom Insights" icon="settings" href="#">
+    Tailor diagnostics to your specific needs with flexible configuration options.
+  </Card>
+</Columns>
+
+<Callout kind="info">
+  Ensure you have API access enabled in your account settings before proceeding.
+</Callout>
+
+## Key Features
+
+Operama delivers comprehensive diagnostic solutions tailored for development teams. You integrate it seamlessly into your CI/CD pipelines or monitoring systems. The platform processes metrics, logs, and performance data to generate reports that highlight bottlenecks and optimization opportunities.
+
+<Tabs>
+  <Tab title="Basic Usage" icon="play">
+    Start with simple queries to test the system.
+    ````javascript
+    const operama = require('operama-sdk');
+    const results = await operama.analyze({ dataset: 'user-logs-2024' });
+    console.log(results);
+    ````
+  </Tab>
+  <Tab title="Advanced Queries" icon="code">
+    Build complex filters for deeper insights.
+    ````javascript
+    const query = {
+      filters: { status: 'error', timestamp: '>2024-01-01' },
+      metrics: ['response_time', 'error_rate']
+    };
+    const insights = await operama.diagnose(query);
+    `````
+  </Tab>
+</Tabs>
+
+<Steps>
+  <Step title="Create Account" icon="user">
+    Sign up at the Operama dashboard and verify your email.
+  </Step>
+  <Step title="Add Data Source" icon="database">
+    Navigate to integrations and connect your first data provider, such as GitHub or Datadog.
+    ````bash
+    operama connect --provider github --token YOUR_TOKEN
+    ````
+  </Step>
+  <Step title="Run First Diagnostic" icon="check-circle">
+    Execute a basic analysis command to see immediate results.
+  </Step>
+</Steps>
+
+<Expandable title="Frequently Asked Questions" default-open="false">
+  What types of data does Operama support? Operama handles structured and unstructured data from logs, metrics, and traces.
+</Expandable>
+
+<ExpandableGroup>
+  <Expandable title="How secure is my data?" default-open="true">
+    Operama encrypts all data in transit and at rest using AES-256 standards. You control access via role-based permissions.
+  </Expandable>
+  <Expandable title="Can I export reports?" default-open="false">
+    Yes, download insights in JSON, CSV, or PDF formats directly from the dashboard.
+  </Expandable>
+</ExpandableGroup>
+
+This introduction equips you with the essentials to explore Operama's diagnostic power. Dive into authentication next to secure your API calls effectively.

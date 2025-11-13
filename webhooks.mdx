@@ -1,0 +1,114 @@
+---
+title: Webhooks
+description: Configure and use webhooks for real-time notifications from Operama diagnostics
+---
+
+## Webhook Overview
+
+You set up webhooks in Operama to receive instant alerts on diagnostic events, such as threshold breaches or analysis completions. This feature pushes data directly to your endpoint, enabling automated responses in your workflow. Define payloads and verify signatures to secure incoming requests.
+
+<Callout kind="alert">
+  Always validate webhook signatures to prevent unauthorized access to your systems.
+</Callout>
+
+## Setting Up Webhooks
+
+Register your webhook URL in the Operama dashboard under the integrations section. You specify events to subscribe to and optional filters for targeted notifications.
+
+<Steps>
+  <Step title="Create Endpoint" icon="server">
+    Expose a public HTTPS endpoint in your application to receive payloads.
+    ````javascript
+    app.post('/webhook/operama', (req, res) => {
+      // Verify signature here
+      console.log('Received:', req.body);
+      res.status(200).send('OK');
+    });
+    ````
+  </Step>
+  <Step title="Register in Dashboard" icon="plus">
+    Add the URL and select events like `diagnostic.complete` or `alert.triggered`.
+  </Step>
+  <Step title="Test Delivery" icon="play">
+    Trigger a test event from the dashboard to confirm receipt.
+    ````bash
+    curl -X POST 'https://api.operama.com/v1/webhooks/test' \
+      -H 'Authorization: Bearer YOUR_API_KEY' \
+      -d '{"url": "https://your-endpoint.com/webhook"}'
+    ````
+  </Step>
+</Steps>
+
+## Payload Structure
+
+Operama sends JSON payloads with event details. You parse the `event_type` and `data` fields to handle specific actions.
+
+````json
+{
+  "event_type": "alert.triggered",
+  "timestamp": "2024-10-15T10:30:00Z",
+  "data": {
+    "metric": "error_rate",
+    "value": 7.5,
+    "threshold": 5,
+    "resource": "repo:your-org/project"
+  },
+  "signature": "sha256=your-hmac-signature"
+}
+````
+
+<Tabs>
+  <Tab title="Signature Verification (Node.js)" icon="code">
+    ````javascript
+    const crypto = require('crypto');
+    const signature = req.headers['x-operama-signature'];
+    const computed = crypto.createHmac('sha256', process.env.OPERAMA_WEBHOOK_SECRET)
+      .update(JSON.stringify(req.body)).digest('hex');
+    if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(`sha256=${computed}`))) {
+      return res.status(401).send('Invalid signature');
+    }
+    ````
+  </Tab>
+  <Tab title="Handling Events (Python)" icon="python">
+    ````python
+    import hmac
+import hashlib
+    signature = request.headers.get('X-Operama-Signature')
+    computed = hmac.new(
+        key=WEBHOOK_SECRET.encode(),
+        msg=request.data,
+        digestmod=hashlib.sha256
+    ).hexdigest()
+    if not hmac.compare_digest(f'sha256={computed}', signature):
+        abort(401)
+    `````
+  </Tab>
+</Tabs>
+
+<Columns cols={2}>
+  <Card title="Event Types" icon="bell" href="#">
+    Subscribe to events like `analysis.started`, `report.generated`, and `anomaly.detected`.
+  </Card>
+  <Card title="Retry Logic" icon="refresh-cw" href="#">
+    Operama retries failed deliveries up to 5 times with exponential backoff.
+  </Card>
+</Columns>
+
+## Best Practices
+
+Secure your endpoints with HTTPS and implement idempotency using the `id` field in payloads. Monitor delivery status in the Operama dashboard for reliability.
+
+<Expandable title="Common Errors and Fixes" default-open="false">
+  `4xx` responses lead to retries; ensure your endpoint returns `200` on success. For `timeout` issues, increase your server's response window.
+</Expandable>
+
+<ExpandableGroup>
+  <Expandable title="How often are webhooks triggered?" default-open="true">
+    Frequency depends on event subscriptions; diagnostics run on schedule or real-time triggers.
+  </Expandable>
+  <Expandable title="Can I filter payloads?" default-open="false">
+    Yes, use dashboard filters for specific resources or severity levels to reduce noise.
+  </Expandable>
+</ExpandableGroup>
+
+Webhooks enhance Operama's real-time capabilities. Review the changelog for recent updates.

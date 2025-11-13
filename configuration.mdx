@@ -1,0 +1,126 @@
+---
+title: Configuration
+description: Set up and customize Operama for your diagnostic workflows
+---
+
+## Initial Setup
+
+You configure Operama by defining data sources, thresholds, and output preferences in a central configuration file or dashboard. This setup tailors the diagnostics to your project's metrics and alerting rules. Start with basic parameters and refine as your usage evolves.
+
+<Callout kind="success">
+  Validate your configuration using the built-in checker to catch errors early.
+</Callout>
+
+## Configuration File Structure
+
+Create a JSON file named `operama-config.json` in your project root. This file specifies integrations, analysis rules, and notification settings.
+
+````json
+{
+  "dataSources": [
+    {
+      "type": "github",
+      "repo": "your-org/your-repo",
+      "token": "{GITHUB_TOKEN}"
+    }
+  ],
+  "thresholds": {
+    "errorRate": {
+      "warning": 5,
+      "critical": 10
+    }
+  },
+  "notifications": {
+    "slack": {
+      "webhook": "https://hooks.slack.com/services/your/webhook"
+    }
+  }
+}
+````
+
+<Steps>
+  <Step title="Install SDK" icon="download">
+    Add the Operama SDK to your project dependencies.
+    <Tabs>
+      <Tab title="npm" icon="package">
+        ````bash
+        npm install operama-sdk
+        ````
+      </Tab>
+      <Tab title="yarn" icon="package">
+        ````bash
+        yarn add operama-sdk
+        ````
+      </Tab>
+    </Tabs>
+  </Step>
+  <Step title="Load Config" icon="file-text">
+    Initialize the client with your configuration.
+    ````javascript
+    import { OperamaClient } from 'operama-sdk';
+    const client = new OperamaClient({ configPath: './operama-config.json' });
+    ````
+  </Step>
+  <Step title="Test Connection" icon="check-circle">
+    Run a validation command to ensure everything connects properly.
+    ````bash
+    operama validate-config
+    ````
+  </Step>
+</Steps>
+
+## Customizing Thresholds
+
+Adjust alert thresholds based on your application's normal behavior. You set values for metrics like latency or error rates to trigger diagnostics.
+
+| Metric | Warning Threshold | Critical Threshold | Description |
+|--------|-------------------|--------------------|-------------|
+| Latency | `<500ms` | `>1s` | Response time outliers |
+| Error Rate | `>2%` | `>5%` | Percentage of failed requests |
+| Uptime | `<99%` | `<95%` | Availability over 24 hours |
+
+<Tabs>
+  <Tab title="Dynamic Thresholds" icon="trending-up">
+    Use expressions for adaptive rules.
+    ````javascript
+    const thresholds = {
+      latency: 'mean + 2 * stddev',
+      errors: { min: 100, rate: '>0.05' }
+    };
+    client.setThresholds(thresholds);
+    ````
+  </Tab>
+  <Tab title="Global vs Local" icon="globe">
+    Apply settings at project or organization level.
+    ````yaml
+    global:
+      defaultLatency: 300ms
+    project:
+      repoSpecific: 200ms
+    `````
+  </Tab>
+</Tabs>
+
+<Columns cols={2}>
+  <Card title="Integration Guides" icon="plug" href="#">
+    Detailed steps for connecting to popular services like Slack or PagerDuty.
+  </Card>
+  <Card title="Best Practices" icon="lightbulb" href="#">
+    Tips for optimizing config to reduce false positives in alerts.
+  </Card>
+</Columns>
+
+<Expandable title="Advanced Options" default-open="false">
+  Enable caching for repeated queries to improve performance: set `cache: { ttl: 3600 }` in your config.
+</Expandable>
+
+<ExpandableGroup>
+  <Expandable title="How do I handle multiple environments?" default-open="true">
+    Use environment-specific config files, like `dev-config.json` and `prod-config.json`, and load based on NODE_ENV.
+  </Expandable>
+  <Expandable title="What if config validation fails?" default-open="false">
+    Review the error logs for schema mismatches. Common issues include invalid token formats or missing required fields.
+  </Expandable>
+</ExpandableGroup>
+
+Proper configuration ensures Operama delivers relevant diagnostics. Explore webhooks for real-time notifications next.
